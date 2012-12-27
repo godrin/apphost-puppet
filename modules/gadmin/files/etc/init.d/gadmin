@@ -1,0 +1,13 @@
+#!/bin/bash
+
+case "$1" in 
+  start)
+    ps -Af|grep gadmin|grep -v grep|grep rackup && { echo "Already runing." ; exit 1 ; }
+    cd /home/gadmin/app && bundle install && bundle exec rackup -D|su - gadmin 
+    ;;
+  stop) 
+    ps -Af|grep -v grep|grep gadmin|grep rackup|awk '{print $2}'|xargs kill
+    ;;
+esac
+
+exit 0
