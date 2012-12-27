@@ -1,4 +1,4 @@
-class postgresql-server {
+class postgresql-client {
   package { "postgresql-client":
 
   }
