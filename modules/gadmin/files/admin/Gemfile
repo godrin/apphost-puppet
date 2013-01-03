@@ -1,3 +1,12 @@
 source :rubygems
 gem 'sinatra'
 gem 'gitolite'
+
+gem 'datamapper'
+#gem 'mustache'
+##gem 'sinatra-mustache', :git=>'https://github.com/jxson/sinatra-mustache'
+group :development do
+  gem 'dm-sqlite-adapter'
+#    gem 'shotgun'
+    end
+#

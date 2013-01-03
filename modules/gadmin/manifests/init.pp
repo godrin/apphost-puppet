@@ -8,6 +8,14 @@ class gadmin {
   group { "gadmin":
     ensure => "present"
   }
+
+  file { "/var/log/gadmin":
+    require=>User["gadmin"],
+    owner=>"gadmin",
+    group=>"gadmin",
+    ensure => "directory",
+    mode => "0755"
+  }
   file { "/home/gadmin":
     ensure => "directory",
 	   owner=>"gadmin",
@@ -119,9 +127,13 @@ class gadmin {
      ensure => "installed",
   }
 
+  package { ["libsqlite3-dev"]:
+    ensure => "installed"
+  }
+
   service { "gadmin":
     ensure => running,
-	   require => [File["/etc/init.d/gadmin"],Package["bundler"], File["/home/gadmin/app"],Exec["admin_repo"]],
+	   require => [File["/etc/init.d/gadmin"],Package["bundler"], File["/home/gadmin/app"],Exec["admin_repo"],Package["libsqlite3-dev"]],
 	   subscribe=>File["/home/gadmin/app"]
   }
 
