@@ -16,9 +16,10 @@ end
 
 
 class MyApp < Sinatra::Base
-  GITOLITE_ADMIN_HOME="/var/lib/git"
+  GITOLITE_ADMIN_HOME="/home/gadmin/repo"
 get '/' do
   @repos = Ga.repos
+  @repos.to_s
 end
 end
 

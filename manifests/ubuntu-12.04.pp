@@ -2,13 +2,12 @@ class gitserver {
 
   class { 'gitolite':
     gituser => 'git',
-	    admin_key => 'ssh-dss AAAAB3NzaC1kc3MAAACBAIikAPitqBkxvI36yJj/4yBrLvNg8gO2mKKpE85Yh9ns/SIOCV8EBiMyPh2f6cE3zla0Rq8XA78QbQqPoyrc1/gb7fq5qlUucaKZ0T5GOcaRMNdJOvw7mRGZg//l+983Ak1xvKwpa5RibC96CbIH32NVqa+IlcVmxGx4SmrVnsx3AAAAFQCgvFq4IW+JfGdgbO1rbzGhQ6f4kQAAAIAF3GCEhdeBqFjT/4lDopSN+KC9BgMYDSKYD4+dkToVYTSIkq/Xn4cdEYE7slN0WyrdprVy/hSddGY97jnH7JgdM6IYHe0T/KtcNGpNf+/O8xSZRBug6QPy3DPWKBA6PCOBLzV7Q91X7yXOhs/c2IOE+n13Lji36RcXsv4eLPuQPwAAAIBm9zYgjH23GgcCUmpw2ut+PqxUTJ5DzzMFuVi1O9CiQpbf6SNLufkngbNs0mClXqShplPQAgiY7zRVxsY994uHSZXF7wUTUEbx5KThFX7Fzz4E3FUGICo16qrAU7VBBeAbrF1jeEqbx46A4DbWkL1joQnnJqGzh2mvTEkW1ya/Ow== david@maclin',
-	    path => '/var/lib/git'
+    admin_key => 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/dSbDKRHBpzaBbCwVEwuqs2ChYn+wvwM+pXLmi7FHG1CfJFuG373fDQNuMfxxbMUxc4n17Vddlqyve2137lsKvnyzzsXSIW7ylGbarZmI7HQ/5kv3SHBuxXWNEPtTXlBkIGKWOgc3GbaU5jHgsm2WliKV7M2W4v8DhpNYmqq43A6Pf44+a/SUeL67GiaKA18sTtrpIoBvRORQxH7XFl5hj4n6L6cuelyR+5u0xKfKR48RT7I9htXMB8bZ6CMCtSONuIVegd56kRUtKXGU90Svj2WC9diVInlpe1GL3ffnrejG4lsBEA5pGvfACHbys8WANL3d7zD+auukxRv0uSzl gadmin@ubuntu-12',
+    path => '/var/lib/git'
   }
   class { 'gadmin':
     require => Class["gitolite"]
   }
-
 }
 
 

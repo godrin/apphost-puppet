@@ -1,12 +1,59 @@
 #!/bin/bash
 
+function get_status {
+  ps -Af|grep gadmin|grep -v grep|grep rackup>/dev/null
+  rc=$?
+}
+
+function startup {
+  cd /home/gadmin/app && bundle install
+echo "cd /home/gadmin/app && bundle exec rackup -D"|su - gadmin 
+}
+
+function getpid {
+   pid=$(ps -Af|grep -v grep|grep gadmin|grep rackup|awk "{print \$2}")
+}
+
+function killme {
+  getpid
+  echo "PID $pid"
+  kill -9 $pid
+
+}
+
 case "$1" in 
   start)
-    ps -Af|grep gadmin|grep -v grep|grep rackup && { echo "Already runing." ; exit 1 ; }
-    cd /home/gadmin/app && bundle install && bundle exec rackup -D|su - gadmin 
+    get_status
+    if [ "$rc" == "0" ] ; then
+      echo "Already running."
+      exit 1
+    else
+      startup
+    fi
+    ;;
+  refresh)
+    killme
+    startup
+    getpid
+    echo "gadmin start/running, process $pid"
     ;;
   stop) 
-    ps -Af|grep -v grep|grep gadmin|grep rackup|awk '{print $2}'|xargs kill
+    killme
+    ;;
+  status)
+    get_status
+    if [ "$rc" == "0" ] ; then
+      getpid
+      echo "gadmin start/running, process $pid"
+    else
+      echo "gadmin stop/waiting"
+      exit 1
+    fi
+    ;;
+  *)
+    echo "Wrong call..."
+    echo ?@
+    exit 1
     ;;
 esac
 
