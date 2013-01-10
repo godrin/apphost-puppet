@@ -22,7 +22,7 @@ if [ "$found" != "0" ] ; then
   echo "        RW+     =   gadmin">>conf/gitolite.conf
 fi
 
-rm keydir/admin.pub
+#rm keydir/admin.pub
 git add keydir/gadmin.pub
 git commit -a -m "secondary key"
 git push origin master

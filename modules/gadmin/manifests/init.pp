@@ -44,11 +44,18 @@ class gadmin {
       owner => "gadmin",
       require => [User["gadmin"],File["/home/gadmin"]]
   }
+  file { "/home/gadmin/.ssh":
+    owner=>"gadmin",
+    group=>"gadmin",
+    mode=>"0700",
+    ensure=>"directory"
+  }
   exec { "gadmin_keys":
     unless=>"test -e /home/gadmin/.ssh/id_dsa",
     path=>"/bin:/usr/bin",
     command=>"ssh-keygen -t dsa -q -N '' -f /home/gadmin/.ssh/id_dsa",
     notify=>Exec["append_gadmin_key"],
+    user=>"gadmin",
     require=>File["/home/gadmin/bin"]
   }
 
@@ -82,31 +89,36 @@ class gadmin {
     ensure => "file",
     owner => "gadmin",
     group => "gadmin",
-    mode => "0600"
+    mode => "0600",
+    require => Exec["gadmin_keys"]
   }
   file { "/home/gadmin/.ssh/id_rsa":
     source => "puppet:///modules/gadmin/initial_keys/id_rsa",
     ensure => "file",
     owner => "gadmin",
     group => "gadmin",
-    mode => "0600"
+    mode => "0600",
+    require => Exec["gadmin_keys"]
   }
   file { "/home/gadmin/.ssh/id_rsa.pub":
     source => "puppet:///modules/gadmin/initial_keys/id_rsa.pub",
     ensure => "file",
     owner => "gadmin",
     group => "gadmin",
-    mode => "0644"
+    mode => "0644",
+    require => Exec["gadmin_keys"]
   }
   file { "/home/gadmin/.ssh/id_dsa":
     owner => "gadmin",
     group => "gadmin",
-    mode => "0600"
+    mode => "0600",
+    require => Exec["gadmin_keys"]
   }
   file { "/home/gadmin/.ssh/id_dsa.pub":
     owner => "gadmin",
     group => "gadmin",
-    mode => "0644"
+    mode => "0644",
+   require => Exec["gadmin_keys"]
   } 
 
 

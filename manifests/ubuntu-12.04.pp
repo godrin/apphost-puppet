@@ -22,3 +22,16 @@ node ubuntu-12 {
   class { 'postgresql-client':
   }
 }
+
+node ubuntubox {
+  class { 'base': }
+  class { 'gitserver': }
+
+  class { 'proxy': }
+
+  class { 'postgresql-server':
+  }
+  class { 'postgresql-client':
+  }
+}
+
