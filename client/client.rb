@@ -76,9 +76,22 @@ class Client
       puts result["error"] 
       false
     else
+      pp "RESULT",result
       true
     end
   end
+
+  def removeRepo(repoName)
+    result=JSON.parse(@server["repo"].post(:params=>{"name"=>repoName,"token"=>@token,"_method"=>"delete"}))
+    if result["state"]!=true
+      puts result["error"]
+      false
+    else
+      pp "RESULT",result
+      true
+    end
+  end
+
 
   private
   def saveConfig
@@ -121,6 +134,12 @@ if ARGV.length>0
 	  raise e
 	end
 	pp result
+      end
+    when "remove","rm","delete"
+      if ARGV[2]
+	repoName=ARGV[2]
+	puts "Deleting repo #{repoName}"
+	pp client.removeRepo(repoName)
       end
     end
   when "register"

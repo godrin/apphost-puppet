@@ -14,6 +14,10 @@ class Ga
 
   @@ga_repo=Gitolite::GitoliteAdmin.new(Ga::GITOLITE_ADMIN_HOME)
 
+  def self.url(repoName)
+    File.open(File.join(GITOLITE_ADMIN_HOME,".git","config")){|f|f.read}.split("\n").select{|l|l=~/gitolite-admin/}[0].sub(/:.*/,"").sub(/.* /,"")+":"+repoName
+  end
+
   def self.repos
     @@ga_repo.config.repos
   end
@@ -79,6 +83,18 @@ pp "dbkey",dbKey
     @@ga_repo.apply
   end
 
+  def self.deleteRepo(dbRepo)
+    self.update
+    repo=self.repos[dbRepo.name]
+    if repo
+      @@ga_repo.config.rm_repo(repo)
+      self.apply
+      true
+    else
+      false
+    end
+  end
+
   def self.updatePermission(dbRepo)
     self.update
     repos=self.repos
@@ -88,7 +104,6 @@ pp "dbkey",dbKey
     unless repo 
       repo=Gitolite::Config::Repo.new(dbRepo.name)
       Ga.config.add_repo(repo)
-
     end
 
     repo.clean_permissions
@@ -100,58 +115,8 @@ pp "dbkey",dbKey
       }
     }
     self.apply
+    self.url(dbRepo.name)
   end
-
-  def self.updateRepo(repoName,user)
-    @@ga_repo.update
-    repos=self.repos
-    #pp dbRepo
-    c=repos[repoName]
-    if c
-      # TODO:update
-      #
-      #
-      pp c,c.methods
-      pp "owner",c.owner
-      pp "permissions",c.permissions
-    else
-      # should create
-
-      c = Gitolite::Config::Repo.new(repoName)
-
-      #For a list of permissions, see http://sitaramc.github.com/gitolite/conf.html#gitolite
-      c.add_permission("RW+", "", "gadmin")
-      #bob", "joe", "susan")
-      #
-      ##Set a git config option to the repo
-      #repo.set_git_config("hooks.mailinglist", "gitolite-commits@example.tld") # => "gitolite-commits@example.tld"
-      #
-      ##Unset a git config option from the repo
-      #repo.unset_git_config("hooks.mailinglist") # => "gitolite-commits@example.tld"
-      #
-      ##Set a gitolite option to the repo
-      #repo.set_gitolite_option("mirroring.master", "kenobi") # => "kenobi"
-      #
-      ##Remove a gitolite option from the repo
-      #repo.unset_gitolite_option("mirroring.master") # => "kenobi"
-      #
-      if false
-	c.set_git_config("hooks.post-receive","touch /tmp/POSTUPDATE")
-      end
-      ##Add repo to config
-      Ga.config.add_repo(c)
-      #Ga.repo.
-    end
-
-    user.keys.each{|key|
-      c.add_permission("RW+","",key.name)
-    }
-
-
-    Ga.repo.save
-    Ga.repo.apply
-  end
-
 end
 
 
@@ -232,7 +197,7 @@ class MyApp < Sinatra::Base
 
       key.destroy
       Ga.removeKey(key)
-      
+
       json :state=>true
     else
       json :state=>false
@@ -246,7 +211,6 @@ class MyApp < Sinatra::Base
     user=checkLogin 
     if user and user.hasKey
       repoName=params["name"]
-      #"meintest"
       if not repoName=~/[a-z][a-z0-9_]*/
 	pp params
 	raise "invalid reponame #{repoName}"
@@ -254,37 +218,25 @@ class MyApp < Sinatra::Base
 
       dbrepo=Repository.createDefault({:name=>repoName,:user=>user,:description=>params["description"]})
 
-      Ga.updatePermission(dbrepo)
+      url=Ga.updatePermission(dbrepo)
 
-      #    Ga.repo.update
-      #    repo = Gitolite::Config::Repo.new(repoName)
-
-      #For a list of permissions, see http://sitaramc.github.com/gitolite/conf.html#gitolite
-      #    repo.add_permission("RW+", "", "gadmin")
-      #bob", "joe", "susan")
-      #
-      ##Set a git config option to the repo
-      #repo.set_git_config("hooks.mailinglist", "gitolite-commits@example.tld") # => "gitolite-commits@example.tld"
-      #
-      ##Unset a git config option from the repo
-      #repo.unset_git_config("hooks.mailinglist") # => "gitolite-commits@example.tld"
-      #
-      ##Set a gitolite option to the repo
-      #repo.set_gitolite_option("mirroring.master", "kenobi") # => "kenobi"
-      #
-      ##Remove a gitolite option from the repo
-      #repo.unset_gitolite_option("mirroring.master") # => "kenobi"
-      #
-      #   repo.set_git_config("hooks.post-receive","touch /tmp/POSTUPDATE")
-      #   ##Add repo to config
-      #   Ga.config.add_repo(repo)
-      #Ga.repo.
-      #   Ga.repo.save
-      #   Ga.repo.apply
-      json :state=>true
+      json :state=>true,:url=>url
     else
       json :state=>false,:error=>"Invalid token"
     end
+  end
+  delete '/repo' do
+    user=checkLogin
+    if user
+      repoName=params["name"]
+      repo=Repository.first({:name=>repoName})
+      acl=AclEntry.first({:repository=>repo,:user=>user})
+      if acl and acl.right=="RW+"
+	Ga.deleteRepo(repo)
+	return json :state=>true
+      end
+    end
+    json :state=>false
   end
 end
 
