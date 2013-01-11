@@ -50,8 +50,8 @@ class Client
     end
   end
 
-  def removeKey(keyData)
-    result=JSON.parse(@server["key"].post(:params=>{"_method"=>"delete","key"=>keyData,"token"=>@token}))
+  def removeKey(keyData,id)
+    result=JSON.parse(@server["key"].post(:params=>{"_method"=>"delete","key"=>keyData,"id"=>id,"token"=>@token}))
     if result["state"]!=true
       puts result["error"]
       false
@@ -63,6 +63,11 @@ class Client
 
   def keys
     JSON.parse(@server["key"].get({:params=>{:token=>@token}}))
+  end
+
+
+  def repos
+    JSON.parse(@server["repo"].get(:params=>{"token"=>@token}))
   end
 
   def createRepo(repoName)
@@ -101,17 +106,22 @@ end
 client=Client.new
 if ARGV.length>0
   case ARGV[0]
-  when "create"
-    if ARGV[1]
-      begin
-	repoName=ARGV[1]
-	puts "Creating repo #{repoName}"
-	result=client.createRepo(repoName)
-      rescue Exception=>e
-	pp e
-	raise e
+  when "repo"
+    case ARGV[1]
+    when "list"
+      pp client.repos
+    when "create"
+      if ARGV[2]
+	begin
+	  repoName=ARGV[2]
+	  puts "Creating repo #{repoName}"
+	  result=client.createRepo(repoName)
+	rescue Exception=>e
+	  pp e
+	  raise e
+	end
+	pp result
       end
-      pp result
     end
   when "register"
     email=ARGV[1]
@@ -140,6 +150,8 @@ if ARGV.length>0
       if ARGV[2] and File.exists?(ARGV[2])
 	c=File.open(ARGV[2]){|f|f.read}
 	pp client.removeKey(c)
+      elsif ARGV[2]=~/^[0-9]*$/
+	pp client.removeKey(nil,ARGV[2])
       end
     when "list"
       pp client.keys

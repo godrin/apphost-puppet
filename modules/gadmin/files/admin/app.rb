@@ -32,27 +32,77 @@ class Ga
   def self.users
   end
 
+  def self.removeKey(dbKey)
+
+    self.update
+pp "dbkey",dbKey
+    key=Gitolite::SSHKey.from_string(File.open(File.join(GITOLITE_ADMIN_HOME,"keydir",dbKey.name+".pub")){|f|f.read},dbKey.name)
+    if key
+
+      dbKey.user.acl_entries.each{|acl|
+	self.updatePermission(acl.repository)
+      }
+
+      @@ga_repo.rm_key(key)
+      self.apply
+      true
+    else
+      false
+    end
+  end
+
   def self.addKey(dbKey)
 
-    @@ga_repo.update
+    self.update
 
     keys=@@ga_repo.ssh_keys
 
 
     name=dbKey.name
-
-    unless keys[name]
+    pp keys,name,keys[name]
+    if (not keys[name]) or keys[name].length==0
       puts "KEY NOT EXISTING - add "
       gkey=Gitolite::SSHKey.from_string(dbKey.data,dbKey.name)
       @@ga_repo.add_key(gkey)
-      Ga.repo.save
-      Ga.repo.apply
-
+      self.apply
+    else
+      puts "KEY ALREADY exists"
     end
 
   end
 
-  def self.update(repoName,user)
+  def self.update
+    @@ga_repo.update
+  end
+  def self.apply
+    @@ga_repo.save
+    @@ga_repo.apply
+  end
+
+  def self.updatePermission(dbRepo)
+    self.update
+    repos=self.repos
+
+    repo=repos[dbRepo.name]
+    pp "repo found ?",repo
+    unless repo 
+      repo=Gitolite::Config::Repo.new(dbRepo.name)
+      Ga.config.add_repo(repo)
+
+    end
+
+    repo.clean_permissions
+    repo.add_permission("RW+","","gadmin")
+
+    dbRepo.acl_entries.each{|acl|
+      acl.user.keys.each{|key|
+	repo.add_permission(acl.right,"",key.name)
+      }
+    }
+    self.apply
+  end
+
+  def self.updateRepo(repoName,user)
     @@ga_repo.update
     repos=self.repos
     #pp dbRepo
@@ -175,29 +225,36 @@ class MyApp < Sinatra::Base
   end
   delete '/key' do
     key=User.first({:token=>params["token"]}).keys.first({:data=>params["key"].chomp})
+    unless key
+      key=User.first({:token=>params["token"]}).keys.first({:id=>params["id"]})
+    end
     if key
+
       key.destroy
+      Ga.removeKey(key)
+      
       json :state=>true
     else
       json :state=>false
     end
+  end
+
+  get '/repo' do
+    json Ga.repos
   end
   post '/repo' do
     user=checkLogin 
     if user and user.hasKey
       repoName=params["name"]
       #"meintest"
-
-      #      dbrepo=Repository.createDefault({:name=>repoName,:user=>user,:description=>params["description"]})
-
-      #     Ga.update(dbrepo)
-
       if not repoName=~/[a-z][a-z0-9_]*/
 	pp params
 	raise "invalid reponame #{repoName}"
       end
 
-      Ga.update(repoName,user)
+      dbrepo=Repository.createDefault({:name=>repoName,:user=>user,:description=>params["description"]})
+
+      Ga.updatePermission(dbrepo)
 
       #    Ga.repo.update
       #    repo = Gitolite::Config::Repo.new(repoName)
