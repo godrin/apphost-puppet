@@ -7,7 +7,7 @@ require 'json'
 class Client
   attr_reader :token
   def initialize
-    @server=Nestful::Resource.new("http://localhost:9293")
+    @server=Nestful::Resource.new("http://localhost:9292")
     readConfig
   end
 
@@ -76,8 +76,7 @@ class Client
       puts result["error"] 
       false
     else
-      pp "RESULT",result
-      true
+      result["url"]
     end
   end
 
@@ -134,6 +133,10 @@ if ARGV.length>0
 	  raise e
 	end
 	pp result
+	if result
+	  puts "run:"
+	  puts "git remote add apphost "+result
+	end
       end
     when "remove","rm","delete"
       if ARGV[2]
