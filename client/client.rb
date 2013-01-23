@@ -122,6 +122,7 @@ if ARGV.length>0
     case ARGV[1]
     when "list"
       pp client.repos
+      exit
     when "create"
       if ARGV[2]
 	begin

@@ -145,10 +145,12 @@ class gadmin {
 
   service { "gadmin":
     ensure => running,
-	   require => [File["/etc/init.d/gadmin"],Package["bundler"], File["/home/gadmin/app"],Exec["admin_repo"],Package["libsqlite3-dev"]],
+	   require => [File["/etc/init.d/gadmin"],Package["bundler"], File["/home/gadmin/app"],File["/home/gadmin/app/config.rb"],Exec["admin_repo"],Package["libsqlite3-dev"]],
 	   subscribe=>File["/home/gadmin/app"]
   }
-
+  file { "/home/gadmin/app/config.rb":
+    content => template( "gadmin/config.rb.erb")
+  }
 
 
 }

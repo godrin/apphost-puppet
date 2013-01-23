@@ -15,6 +15,7 @@ class Ga
   @@ga_repo=Gitolite::GitoliteAdmin.new(Ga::GITOLITE_ADMIN_HOME)
 
   def self.url(repoName)
+    # FIXME: wrong hostname !!!
     File.open(File.join(GITOLITE_ADMIN_HOME,".git","config")){|f|f.read}.split("\n").select{|l|l=~/gitolite-admin/}[0].sub(/:.*/,"").sub(/.* /,"")+":"+repoName
   end
 
