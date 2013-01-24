@@ -21,6 +21,7 @@ node ubuntu-12 {
   }
   class { 'postgresql-client':
   }
+  include runner
 }
 
 node ubuntubox {

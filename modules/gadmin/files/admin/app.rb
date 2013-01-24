@@ -16,6 +16,7 @@ class Ga
 
   def self.url(repoName)
     # FIXME: wrong hostname !!!
+    return "git@"+HOSTNAME+":"+repoName
     File.open(File.join(GITOLITE_ADMIN_HOME,".git","config")){|f|f.read}.split("\n").select{|l|l=~/gitolite-admin/}[0].sub(/:.*/,"").sub(/.* /,"")+":"+repoName
   end
 

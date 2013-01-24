@@ -137,6 +137,7 @@ if ARGV.length>0
 	if result
 	  puts "run:"
 	  puts "git remote add apphost "+result
+	  puts "git push apphost master"
 	end
       end
     when "remove","rm","delete"
