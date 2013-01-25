@@ -12,6 +12,8 @@ else
   exit 1
 fi
 cd ~/repo
+git reset HEAD
+git pull
 cp ~/.ssh/id_dsa.pub keydir/gadmin.pub
 grep gadmin conf/gitolite.conf
 found=$?

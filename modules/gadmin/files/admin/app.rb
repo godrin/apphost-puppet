@@ -110,6 +110,7 @@ pp "dbkey",dbKey
 
     repo.clean_permissions
     repo.add_permission("RW+","","gadmin")
+    repo.add_permission("R","","runner")
 
     dbRepo.acl_entries.each{|acl|
       acl.user.keys.each{|key|

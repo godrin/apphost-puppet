@@ -51,13 +51,47 @@ class runner {
       source => "puppet:///modules/runner/clone.sh"
   }
 
+  file { "/home/runner/monitor_process.sh":
+    mode=>"0755",
+      owner=>"runner",
+      group=>"runner",
+      source => "puppet:///modules/runner/monitor_process.sh"
+  }
+
+
 
   sudo::line { "sudo-initdb":
-    line=>"#runner     ALL=NOPASSWD:su - postgres /usr/local/bin/init_db.sh" 
+    line=>"runner     ALL=(postgres) NOPASSWD: /usr/local/bin/init_db.sh" 
   }
 
   completeuser { "runner":
     name => "runner"
   }
+  class runnerKeygen {
+    keygen::gen { "runner-key":
+      user=>"runner"
+    }
+  }
+  class { 'runnerKeygen': }
+  file { "/home/runner/runner.pub":
+    source=>"/home/runner/.ssh/id_dsa.pub",
+      require=>Class["runnerKeygen"]
+  }
+  exec { "rm -rf gitolite-admin && git clone git@localhost:gitolite-admin.git && cd gitolite-admin && cp /home/runner/runner.pub keydir/ && git add keydir/runner.pub && git commit -a -m 'runner key' && git pushi && cp /home/runner/runner.pub /home/gadmin/runner.pub":   
+ user=>"gadmin",
+    require=>[User["gadmin"],File["/home/runner/runner.pub"]],
+    path=>"/usr/bin:/bin",
+    cwd=>"/tmp",
+    environment=>"HOME=/home/gadmin",
+    unless=>"test -e /home/gadmin/runner.pub",
 
+  }
+
+  file { "/home/runner/.ssh/known_hosts":
+    require=>[User["runner"],File["/home/gadmin/.ssh/known_hosts"]],
+    ensure=>"file",
+    source=>"/home/gadmin/.ssh/known_hosts",
+    owner=>"runner",
+    group=>"runner"
+  }
 }
