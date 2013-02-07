@@ -9,6 +9,9 @@ fi
 
 cd $(dirname $0)
 
+echo "kill old"
+./control/monitor.rb delete $1
+
 mkdir -p dbs
 if [ -e dbs/$1 ]; then
   connect=$(cat dbs/$1)
@@ -18,6 +21,6 @@ else
 fi
 
 ./clone.sh $1
-./monitor_process.sh $1 "$connect"
-
+#./monitor_process.sh $1 "$connect"
+./control/monitor.rb add $1
 

@@ -58,6 +58,22 @@ class runner {
       source => "puppet:///modules/runner/monitor_process.sh"
   }
 
+  file { "/home/runner/control":
+    owner=>"runner",group=>"runner",
+  #  source => "puppet:///modules/runner/control",
+    ensure=>"directory"
+  } 
+  file { "/home/runner/control/model.rb":
+    owner=>"runner",group=>"runner",
+    source=>"puppet:///modules/runner/control/model.rb",
+    ensure=>"file"
+  }
+  file { "/home/runner/control/monitor.rb":
+    owner=>"runner",group=>"runner",
+    source=>"puppet:///modules/runner/control/monitor.rb",
+    ensure=>"file"
+  }
+
 
 
   sudo::line { "sudo-initdb":

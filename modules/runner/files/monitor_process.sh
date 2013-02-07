@@ -12,4 +12,4 @@ test -e fifos/$1_out || mkfifo fifos/$1_out
 test -e fifos/$1_err || mkfifo fifos/$1_err
 
 cd tmp/$1
-rackup -p $freeport
+rackup -p $freeport >../../fifos/$1_out 2>../../fifos/$1_err
